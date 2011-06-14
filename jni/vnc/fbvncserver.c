@@ -132,7 +132,8 @@ static void init_fb(void)
   }
     
     bytespp = scrinfo.bits_per_pixel /CHAR_BIT;
-    
+     __android_log_print(ANDROID_LOG_INFO,"VNC", "PIXCLOCK : %d\n",
+                        (int)scrinfo.pixclock);
      __android_log_print(ANDROID_LOG_INFO,"VNC", "line_lenght=%d xres=%d, yres=%d, xresv=%d, yresv=%d, xoffs=%d, yoffs=%d, bpp=%d\n",
                         (int)fscrinfo.line_length,(int)scrinfo.xres, (int)scrinfo.yres,
                         (int)scrinfo.xres_virtual, (int)scrinfo.yres_virtual,
