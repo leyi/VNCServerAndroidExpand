@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
  
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -54,7 +55,8 @@
 #define CONCAT2E(a,b) CONCAT2(a,b)
 #define CONCAT3(a,b,c) a##b##c
 #define CONCAT3E(a,b,c) CONCAT3(a,b,c)
- 
+
+#define PICTURE_TIMEOUT (1.0/15.0
 
 #define BUS_VIRTUAL 0x06
 
@@ -64,7 +66,6 @@
 char VNC_PASSWORD[256] = "";
 char framebuffer_device[256] = "/dev/graphics/fb0";
 int VNC_PORT=5901;
-
 static struct fb_var_screeninfo scrinfo;
 static struct fb_fix_screeninfo fscrinfo;
 static int fbfd = -1;
@@ -115,7 +116,7 @@ inline size_t roundUpToPageSize(size_t x) {
 static void init_fb(void)
 {  
     size_t bytespp;
-       
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★init_fb");       
     if ((fbfd = open(framebuffer_device, O_RDWR)) == -1)
     { 
         __android_log_print(ANDROID_LOG_INFO,"VNC","cannot open fb device %s\n", framebuffer_device);
@@ -132,8 +133,8 @@ static void init_fb(void)
   }
     
     bytespp = scrinfo.bits_per_pixel /CHAR_BIT;
-     __android_log_print(ANDROID_LOG_INFO,"VNC", "PIXCLOCK : %d\n",
-                        (int)scrinfo.pixclock);
+     __android_log_print(ANDROID_LOG_INFO,"VNC", "PIX             CLOCK : %f\n",(float)scrinfo.pixclock);
+      __android_log_print(ANDROID_LOG_INFO,"VNC","TEXT TEST\n");
      __android_log_print(ANDROID_LOG_INFO,"VNC", "line_lenght=%d xres=%d, yres=%d, xresv=%d, yresv=%d, xoffs=%d, yoffs=%d, bpp=%d\n",
                         (int)fscrinfo.line_length,(int)scrinfo.xres, (int)scrinfo.yres,
                         (int)scrinfo.xres_virtual, (int)scrinfo.yres_virtual,
@@ -166,6 +167,7 @@ static void init_fb(void)
  
 static void cleanup_fb(void) 
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★cleanup_fb");
     if(fbfd != -1)
     {
         close(fbfd);
@@ -174,6 +176,7 @@ static void cleanup_fb(void)
 
 static void init_input()
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★init_input");
     struct input_id id = {
         BUS_VIRTUAL, /* Bus type. */
         1, /* Vendor id. */
@@ -190,6 +193,7 @@ static void init_input()
 
 static void cleanup_kbd()
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★cleanup_kbd");
     if(inputfd != -1)
     {
         suinput_close(inputfd);
@@ -198,6 +202,7 @@ static void cleanup_kbd()
 
 void send_remote_msg(char *msg)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★send_remote_msg");
   int localsocket, len;
     struct sockaddr_un remote;
 
@@ -235,6 +240,7 @@ void send_remote_msg(char *msg)
 /*****************************************************************************/
 static ClientGoneHookPtr clientGone(rfbClientPtr cl)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★ClientGoneHookPtr");
   char *header="~DISCONNECTED|";
   char *msg=malloc(sizeof(char)*(strlen(header)));
   msg[0]='\0';
@@ -245,6 +251,7 @@ static ClientGoneHookPtr clientGone(rfbClientPtr cl)
 
 static rfbNewClientHookPtr clientHook(rfbClientPtr cl)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★rfbNewClientHookPtr");
   if (scaling!=100)
       rfbScalingSetup(cl, vncscr->width*scaling/100.0, vncscr->height*scaling/100.0);
 
@@ -263,6 +270,7 @@ static rfbNewClientHookPtr clientHook(rfbClientPtr cl)
 
 void CutText(char* str,int len, struct _rfbClientRec* cl)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★CutText");
   str[len]='\0';
   char *header="~CLIP|";
   char *msg=malloc(sizeof(char)*(strlen(str) + strlen(header)));
@@ -275,7 +283,7 @@ void CutText(char* str,int len, struct _rfbClientRec* cl)
 
 static void init_fb_server(int argc, char **argv)
 { 
-   
+    __android_log_print(ANDROID_LOG_INFO,"VNC","LOCATION:init_fb_server");
     __android_log_print(ANDROID_LOG_INFO,"VNC","Initializing server...\n");
     
     vncbuf = calloc(scrinfo.xres * scrinfo.yres, scrinfo.bits_per_pixel/CHAR_BIT);
@@ -363,6 +371,7 @@ static int keysym2scancode(rfbBool down, rfbKeySym c, rfbClientPtr cl, int *sh, 
  
 static void keyevent(rfbBool down, rfbKeySym key, rfbClientPtr cl)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★keyevent");
     int code;
 //     __android_log_print(ANDROID_LOG_INFO,"VNC","Got keysym: %04x (down=%d)\n", (unsigned int)key, (int)down);
     
@@ -411,6 +420,7 @@ int spec4sh[] = {1,1,1,1,0};
 
 static int keysym2scancode(rfbBool down, rfbKeySym c, rfbClientPtr cl, int *sh, int *alt)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★keysym2scancode");
     int real=1;
     if ('a' <= c && c <= 'z')
         return qwerty[c-'a'];
@@ -543,6 +553,7 @@ static int keysym2scancode(rfbBool down, rfbKeySym c, rfbClientPtr cl, int *sh, 
 
 inline void transform_touch_coordinates(int *x, int *y)
 {
+
     int scale=4096.0;
     int old_x=*x,old_y=*y;
     
@@ -550,8 +561,7 @@ inline void transform_touch_coordinates(int *x, int *y)
     {  
         *x = old_x*scale/scrinfo.xres-scale/2.0;
         *y = old_y*scale/scrinfo.yres-scale/2.0;
-    }
-    else if (rotation==90)
+    }else if (rotation==90)
     {
         *x =old_y*scale/scrinfo.xres-scale/2.0;
         *y = (scrinfo.yres - old_x)*scale/scrinfo.yres-scale/2.0;
@@ -571,6 +581,7 @@ inline void transform_touch_coordinates(int *x, int *y)
 
 static void ptrevent(int buttonMask, int x, int y, rfbClientPtr cl)
 {
+
     static int leftClicked=0,rightClicked=0,middleClicked=0;
     
     transform_touch_coordinates(&x,&y);
@@ -631,7 +642,9 @@ static void ptrevent(int buttonMask, int x, int y, rfbClientPtr cl)
 
 void sigproc()
 { 	
-    __android_log_print(ANDROID_LOG_INFO,"VNC","Cleaning up...\n");
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★sigproc");
+    __android_log_print(ANDROID_LOG_INFO,"VNC","Cleaning up...\n");	 	    
+  __android_log_print(ANDROID_LOG_INFO,"VNC","rotating to %d degrees\n",rotation);
     cleanup_fb();
     cleanup_kbd();
     exit(0); /* normal exit status */
@@ -641,6 +654,7 @@ void sigproc()
 
 static void rotate()
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★rotate");
     rotation+=90;
     rotation=rotation%360;
     
@@ -664,6 +678,7 @@ static void rotate()
 
 void print_usage(char **argv)
 {
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★print_usage");
     printf("androidvncserver [-p password] [-h]\n"
                         "-p password: Password to access server\n"
                         "-r rotation: Screen rotation (degrees) (0,90,180,270)\n"
@@ -671,10 +686,27 @@ void print_usage(char **argv)
                         "-h : print this help\n"
 		        "-f <device> select framebuffer device\n;");
 }
-
-
+/*
+static int TimeToTake() 
+{
+     static struct timeval now={0,0}, then={0,0};
+     double elapsed, dnow, dthen;
+ 
+     gettimeofday(&now,NULL);
+ 
+     dnow  = now.tv_sec  + (now.tv_usec /1000000.0);
+     dthen = then.tv_sec + (then.tv_usec/1000000.0);
+     elapsed = dnow - dthen;
+ 
+     //if (elapsed > PICTURE_TIMEOUT)
+      // memcpy((char *)&then, (char *)&now, sizeof(struct timeval));
+     return elapsed > PICTURE_TIMEOUT;
+ }
+*/
 int main(int argc, char **argv)
 {
+    time_t STARTTIME = 0, ENDTIME = 0;
+    __android_log_print(ANDROID_LOG_INFO,"VNC","★LOCATION★main fuction(Starting Point)");
     signal(SIGINT, sigproc);//pipe signals
     signal(SIGKILL, sigproc);
     signal(SIGILL, sigproc);
@@ -721,7 +753,7 @@ int main(int argc, char **argv)
 		      scaling=100;
 	 	    __android_log_print(ANDROID_LOG_INFO,"VNC","scaling to %d percent\n",scaling);
 		    break;
-		case 't': //test mode
+		case 't': //test mode struct timeval now
 		    i++;
 		    test_mode=atoi(argv[i]);
 		    __android_log_print(ANDROID_LOG_INFO,"VNC","In test mode! t=%d\n",test_mode);
@@ -750,17 +782,17 @@ int main(int argc, char **argv)
     {
         while (vncscr->clientHead == NULL)
             rfbProcessEvents(vncscr, 100000);
-	  
         rfbMarkRectAsModified(vncscr, 0, 0, vncscr->width, vncscr->height);
-
 	if (standby>40)
 	  rfbProcessEvents(vncscr, 300000);
 	else if (standby>30)
 	  rfbProcessEvents(vncscr, 200000);
 	else
 	  rfbProcessEvents(vncscr, 1000);
+	STARTTIME=clock();
         update_screen(); 
-
+	ENDTIME=clock();
+        __android_log_print(ANDROID_LOG_INFO,"VNC","FPS : %lf\n",(double)(600000/(int)(ENDTIME-STARTTIME)));
 	
 	if (idle)
 	  {
