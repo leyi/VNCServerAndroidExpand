@@ -792,7 +792,7 @@ int main(int argc, char **argv)
 	STARTTIME=clock();
         update_screen(); 
 	ENDTIME=clock();
-        __android_log_print(ANDROID_LOG_INFO,"VNC","FPS : %lf\n",(double)(600000/(int)(ENDTIME-STARTTIME)));
+        __android_log_print(ANDROID_LOG_INFO,"VNC","FPS : %lf\n",(double)(CLOCKS_PER_SEC/(int)(ENDTIME-STARTTIME)));
 	
 	if (idle)
 	  {
